@@ -1,6 +1,7 @@
 //DATE: 14 01 2019
 //ORGINAL SOURCE: https://docs.microsoft.com/en-us/windows/desktop/ToolHelp/taking-a-snapshot-and-viewing-processes
 //MODIFIED BY: MARK LIM (@PETA909)
+//Modified it to locate a specific process e.g. smss.exe
 
 
 #include <windows.h>
@@ -9,18 +10,19 @@
 
 
 //  Forward declarations:
-BOOL GetProcessList();
+BOOL LocateProcess(wchar_t* proc);
 BOOL ListProcessModules(DWORD dwPID);
 BOOL ListProcessThreads(DWORD dwOwnerPID);
 void printError(const wchar_t* msg);//Replaced the argument TCHAR.
 
 int main(void)
 {
-	GetProcessList();
+	wchar_t proc_str[] = L"smss.exe";
+	LocateProcess(proc_str);
 	return 0;
 }
 
-BOOL GetProcessList()
+BOOL LocateProcess(wchar_t* proc)
 {
 	HANDLE hProcessSnap;
 	HANDLE hProcess;
@@ -52,6 +54,8 @@ BOOL GetProcessList()
 	// display information about each process in turn
 	do
 	{
+		if (wcscmp(pe32.szExeFile, proc) == 0)
+		{
 		_tprintf(TEXT("\n\n====================================================="));
 		_tprintf(TEXT("\nPROCESS NAME:  %s"), pe32.szExeFile);
 		_tprintf(TEXT("\n-------------------------------------------------------"));
@@ -70,15 +74,18 @@ BOOL GetProcessList()
 		}
 
 		_tprintf(TEXT("\n  Process ID        = 0x%08X"), pe32.th32ProcessID);
-		_tprintf(TEXT("\n  Thread count      = %d"), pe32.cntThreads);
+		//_tprintf(TEXT("\n  Thread count      = %d"), pe32.cntThreads);
 		_tprintf(TEXT("\n  Parent process ID = 0x%08X"), pe32.th32ParentProcessID);
-		_tprintf(TEXT("\n  Priority base     = %d"), pe32.pcPriClassBase);
+		//_tprintf(TEXT("\n  Priority base     = %d"), pe32.pcPriClassBase);
 		if (dwPriorityClass)
 			_tprintf(TEXT("\n  Priority class    = %d"), dwPriorityClass);
 
 		// List the modules and threads associated with this process
-		ListProcessModules(pe32.th32ProcessID);
-		ListProcessThreads(pe32.th32ProcessID);
+		//ListProcessModules(pe32.th32ProcessID);
+		//ListProcessThreads(pe32.th32ProcessID);
+
+		}
+
 
 	} while (Process32Next(hProcessSnap, &pe32));
 
